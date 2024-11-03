@@ -1,0 +1,21 @@
+# Python bytecode files
+*.pyc
+__pycache__/
+
+# Django default SQLite database
+db.sqlite3
+
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+
+# macOS system files
+.DS_Store
+
+# VSCode settings
+.vscode/
+
+# Static files
+staticfiles/

@@ -1,0 +1,28 @@
+/* Container */
+.container {
+  padding: 20px;
+  max-width: 500px;
+  margin: auto;
+  text-align: center;
+}
+
+/* Delete Button */
+.btn-delete {
+  background-color: #dc3545; 
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background-color: #6c757d; 
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  margin-top: 10px;
+  display: inline-block;
+}
