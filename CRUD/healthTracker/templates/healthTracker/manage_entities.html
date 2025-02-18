@@ -1,0 +1,162 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Patients</title>
+    <link rel="stylesheet" href="{% static 'css/manage_entities.css' %}" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1 class="mng-title">Manage <strong>Patients</strong></h1>
+        <div class="header-buttons">
+          <a href="{% url 'index' %}" class="btn btn-primary">Home</a>
+          <a href="#" class="btn btn-danger" id="delete-selected">Delete Selected</a>
+          <a href="{% url 'create_patient' %}?came_from_table=true" class="btn btn-success">Add New Patient</a>
+        </div>
+      </div>
+
+      {% if patients %}
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr class="title-row">
+              <th><input type="checkbox" id="select-all" /></th>
+              <th>Name</th>
+              <th>Gender</th>
+              <th>Age</th>
+              <th>Date of Birth</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Address</th>
+              <th>Medical Condition</th>
+              <th>Medical Status</th>
+              <th>Last Health Check Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for patient in patients %}
+            <tr>
+              <td><input type="checkbox" class="select-row" data-id="{{ patient.pk }}" /></td>
+              <td>{{ patient.first_name }} {{ patient.last_name }}</td>
+              <td>{{ patient.gender }}</td>
+              <td>{{ patient.age }}</td>
+              <td>{{ patient.date_of_birth }}</td>
+              <td>{{ patient.phone_number }}</td>
+              <td>{{ patient.email }}</td>
+              <td>{{ patient.address }}</td>
+              <td>{{ patient.medical_condition }}</td>
+              <td>
+                <select name="medical_status" class="medical-status" data-patient-id="{{ patient.pk }}">
+                  <option value="Healthy" {% if patient.medical_status == "Healthy" %}selected{% endif %}>Healthy</option>
+                  <option value="Sick" {% if patient.medical_status == "Sick" %}selected{% endif %}>Sick</option>
+                  <option value="Recovering" {% if patient.medical_status == "Recovering" %}selected{% endif %}>Recovering</option>
+                  <option value="Under Treatment" {% if patient.medical_status == "Under Treatment" %}selected{% endif %}>Under Treatment</option>
+                  <option value="Stable" {% if patient.medical_status == "Stable" %}selected{% endif %}>Stable</option>
+                  <option value="Critical" {% if patient.medical_status == "Critical" %}selected{% endif %}>Critical</option>
+                  <option value="In Remission" {% if patient.medical_status == "In Remission" %}selected{% endif %}>In Remission</option>
+                  <option value="Pending Diagnosis" {% if patient.medical_status == "Pending Diagnosis" %}selected{% endif %}>Pending Diagnosis</option>
+                  <option value="Discharged" {% if patient.medical_status == "Discharged" %}selected{% endif %}>Discharged</option>
+                  <option value="Unknown" {% if patient.medical_status == "Unknown" %}selected{% endif %}>Unknown</option>
+                </select>
+              </td>
+              <td>
+                <input type="date" class="last-health-check" value="{{ patient.last_health_check_date|date:'Y-m-d' }}" data-patient-id="{{ patient.pk }}" />
+              </td>
+              <td> 
+                <a href="{% url 'update_patient' patient.pk %}" class="icon-button" title="Edit">✏️</a>
+                <form action="{% url 'delete_patient' patient.pk %}" method="post" style="display: inline">
+                  {% csrf_token %}
+                  <button type="submit" class="icon-button" title="Delete" onclick="return confirm('Are you sure you want to delete this patient?');">🗑️</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+
+        </table>
+      </div>
+
+      <div class="pagination">
+        {% if patients.has_previous %}
+        <a href="?page={{ patients.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span>Page {{ patients.number }}</span>
+        {% if patients.has_next %}
+        <a href="?page={{ patients.next_page_number }}">Next</a>
+        {% endif %}
+      </div>
+      {% else %}
+      <p>No patient data available. Please add a new patient.</p>
+      {% endif %}
+    </div>
+
+    <script>
+      document.getElementById("select-all").addEventListener("click", function () {
+        const isChecked = this.checked;
+        document.querySelectorAll(".select-row").forEach((checkbox) => {
+          checkbox.checked = isChecked;
+        });
+      });
+
+      document.getElementById("delete-selected").addEventListener("click", function (event) {
+        event.preventDefault();
+        if (!confirm("Are you sure you want to delete the selected patients?")) return;
+
+        const selectedIds = Array.from(
+          document.querySelectorAll(".select-row:checked")
+        ).map((cb) => cb.dataset.id);
+        if (selectedIds.length > 0) {
+          fetch("{% url 'delete_multiple_patients' %}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({ ids: selectedIds }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.status === "success") {
+                location.reload();
+              } else {
+                alert("Error deleting selected patients.");
+              }
+            });
+        } else {
+          alert("No patients selected for deletion.");
+        }
+      });
+
+      document.querySelectorAll('.medical-status, .last-health-check').forEach(element => {
+          element.addEventListener('change', function() {
+              const patientId = this.getAttribute('data-patient-id');
+              const medicalStatus = this.closest('tr').querySelector('.medical-status').value;
+              const lastCheckDate = this.closest('tr').querySelector('.last-health-check').value;
+
+              fetch(`/update_patient/${patientId}/`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'X-CSRFToken': '{{ csrf_token }}'
+                  },
+                  body: JSON.stringify({
+                      medical_status: medicalStatus,
+                      last_health_check_date: lastCheckDate
+                  })
+              }).then(response => {
+                  if (response.ok) {
+                      console.log("Patient updated successfully.");
+                  } else {
+                      console.error("Error updating patient.");
+                  }
+              });
+          });
+      });
+    </script>
+  </body>
+</html>

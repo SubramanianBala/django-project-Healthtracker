@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HealthTracker App</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/index.css' %}" />
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title"><span class="highlight">H</span>EALTHRACKER APP</h1>
+      <p class="description">
+        Keep track of your patients' health data easily and efficiently.
+      </p>
+
+      <div class="button-group">
+        <a href="{% url 'create_patient' %}" class="btn btn-green"
+          >Add New Patient</a
+        >
+        <span class="divider"></span>
+        <a href="{% url 'manage_entities' %}" class="btn btn-blue"
+          >Manage Patients</a
+        >
+      </div>
+      
+    </div>
+  </body>
+</html>

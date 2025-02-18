@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% load static %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Patient Form</title>
+    <link rel="stylesheet" href="{% static 'css/patient_form.css' %}" />
+  </head>
+  <body>
+    <div class="form-container">
+      <h1 class="form-title">Patient Details</h1>
+
+      <form id="patientForm" method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="error">
+            {% for error in form.non_field_errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <div class="form-group name-group">
+          <div class="name-field">
+            <label for="first_name">First Name:</label>
+            {{ form.first_name }}
+          </div>
+          <div class="name-field">
+            <label for="last_name">Last Name:</label>
+            {{ form.last_name }}
+          </div>
+        </div>
+
+        {% if form.first_name.errors or form.last_name.errors %}
+          <div class="error">
+            {% if form.first_name.errors %}
+              {{ form.first_name.errors.0 }}
+            {% endif %}
+            {% if form.last_name.errors %}
+              {{ form.last_name.errors.0 }}
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="form-group">
+          <label for="gender">Gender:</label>
+          {{ form.gender }} {% if form.gender.errors %}
+            <div class="error">{{ form.gender.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="age">Age:</label>
+          <input 
+            type="number" 
+            name="age" 
+            class="form-control" 
+            id="id_age" 
+            value="{{ form.age.value|default:form.age.value }}" 
+            min="0" 
+            step="1" 
+            required
+          />
+          {% if form.age.errors %}
+            <div class="error">{{ form.age.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="date_of_birth">Date of Birth:</label>
+          {{ form.date_of_birth }} {% if form.date_of_birth.errors %}
+            <div class="error">{{ form.date_of_birth.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="phone_number">Phone Number:</label>
+          {{ form.phone_number }} {% if form.phone_number.errors %}
+            <div class="error">{{ form.phone_number.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email:</label>
+          {{ form.email }} {% if form.email.errors %}
+            <div class="error">{{ form.email.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="address">Address:</label>
+          {{ form.address }} {% if form.address.errors %}
+            <div class="error">{{ form.address.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="medical_condition">Medical Condition:</label>
+          {{ form.medical_condition }} {% if form.medical_condition.errors %}
+            <div class="error">{{ form.medical_condition.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-submit">Submit</button>
+          <a href="{% url redirect_url %}" class="btn btn-cancel">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("patientForm");
+        const phoneInput = document.getElementById("id_phone_number");
+        const emailInput = document.getElementById("id_email");
+
+        form.addEventListener("submit", function (e) {
+          let hasErrors = false;
+          const errorMessages = [];
+
+        
+          const requiredFields = form.querySelectorAll("[required]");
+          requiredFields.forEach((field) => {
+            if (!field.value.trim()) {
+              errorMessages.push(`${field.placeholder || field.name} cannot be empty.`);
+              hasErrors = true;
+            }
+          });
+
+         
+          if (!/^\d{10}$/.test(phoneInput.value)) {
+            errorMessages.push("Phone number must be exactly 10 digits.");
+            hasErrors = true;
+          }
+
+        
+          const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+          if (!emailPattern.test(emailInput.value)) {
+            errorMessages.push("Please enter a valid email address.");
+            hasErrors = true;
+          }
+
+        
+          if (hasErrors) {
+            e.preventDefault();
+            alert(errorMessages.join("\n"));
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
